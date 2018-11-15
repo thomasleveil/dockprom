@@ -21,20 +21,20 @@ Prerequisites:
 
 * Docker Engine >= 1.13
 * Docker Compose >= 1.11
+* Traefik >= 1.7
 
 Containers:
 
-* Prometheus (metrics database) `http://<host-ip>:9090`
-* Prometheus-Pushgateway (push acceptor for ephemeral and batch jobs) `http://<host-ip>:9091`
-* AlertManager (alerts management) `http://<host-ip>:9093`
-* Grafana (visualize metrics) `http://<host-ip>:3000`
+* Prometheus (metrics database) `http://prometheus.<compose project name>.<traefik default domain>`
+* Prometheus-Pushgateway (push acceptor for ephemeral and batch jobs) `http://pushgateway.<compose project name>.<traefik default domain>`
+* AlertManager (alerts management) `http://alertmanager.<compose project name>.<traefik default domain>`
+* Grafana (visualize metrics) `http://grafana.<compose project name>.<traefik default domain>`
 * NodeExporter (host metrics collector)
 * cAdvisor (containers metrics collector)
-* Caddy (reverse proxy and basic auth provider for prometheus and alertmanager)
 
 ## Setup Grafana
 
-Navigate to `http://<host-ip>:3000` and login with user ***admin*** password ***admin***. You can change the credentials in the compose file or by supplying the `ADMIN_USER` and `ADMIN_PASSWORD` environment variables on compose up. The config file can be added directly in grafana part like this
+Navigate to `http://grafana.<compose project name>.<traefik default domain>` and login with user ***admin*** password ***admin***. You can change the credentials in the compose file or by supplying the `ADMIN_USER` and `ADMIN_PASSWORD` environment variables on compose up. The config file can be added directly in grafana part like this
 ```
 grafana:
   image: grafana/grafana:5.2.4
@@ -81,7 +81,7 @@ You can find it in `grafana/dashboards/docker_host.json`, at line 480 :
 
 I work on BTRFS, so i need to change `aufs` to `btrfs`.
 
-You can find right value for your system in Prometheus `http://<host-ip>:9090` launching this request :
+You can find right value for your system in Prometheus `http://prometheus.<compose project name>.<traefik default domain>` launching this request :
 
       node_filesystem_free_bytes
 
@@ -127,7 +127,7 @@ I've setup three alerts configuration files:
 You can modify the alert rules and reload them by making a HTTP POST call to Prometheus:
 
 ```
-curl -X POST http://admin:admin@<host-ip>:9090/-/reload
+curl -X POST http://admin:admin@prometheus.<compose project name>.<traefik default domain>/-/reload
 ```
 
 ***Monitoring services alerts***
@@ -235,7 +235,7 @@ The AlertManager service is responsible for handling alerts sent by Prometheus s
 AlertManager can send notifications via email, Pushover, Slack, HipChat or any other system that exposes a webhook interface.
 A complete list of integrations can be found [here](https://prometheus.io/docs/alerting/configuration).
 
-You can view and silence notifications by accessing `http://<host-ip>:9093`.
+You can view and silence notifications by accessing `http://alertmanager.<compose project name>.<traefik default domain>`.
 
 The notification receivers can be configured in [alertmanager/config.yml](https://github.com/stefanprodan/dockprom/blob/master/alertmanager/config.yml) file.
 
@@ -266,7 +266,7 @@ The [pushgateway](https://github.com/prometheus/pushgateway) is used to collect 
 
 To push data, simply execute:
 
-    echo "some_metric 3.14" | curl --data-binary @- http://user:password@localhost:9091/metrics/job/some_job
+    echo "some_metric 3.14" | curl --data-binary @- http://user:password@pushgateway.<compose project name>.<traefik default domain>/metrics/job/some_job
 
 Please replace the `user:password` part with your user and password set in the initial configuration (default: `admin:admin`).
 
@@ -311,6 +311,8 @@ First perform a `docker-compose down` then modify your docker-compose.yml to inc
       - monitor-net
     labels:
       org.label-schema.group: "monitoring"
+      traefik.enable: "true"
+      traefik.port: 3000
 ```
 
 Perform a `docker-compose up -d` and then issue the following commands:
@@ -349,4 +351,6 @@ To run the grafana container as `user: 104` change your `docker-compose.yml` lik
       - monitor-net
     labels:
       org.label-schema.group: "monitoring"
+      traefik.enable: "true"
+      traefik.port: 3000
 ```

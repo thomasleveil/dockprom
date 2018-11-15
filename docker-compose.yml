@@ -30,6 +30,9 @@ services:
       - monitor-net
     labels:
       org.label-schema.group: "monitoring"
+      traefik.enable: "true"
+      traefik.port: 9090
+      traefik.frontend.auth.basic.users: ${TRAEFIK_AUTH}
   
   alertmanager:
     image: prom/alertmanager:v0.15.3
@@ -46,6 +49,9 @@ services:
       - monitor-net
     labels:
       org.label-schema.group: "monitoring"
+      traefik.enable: "true"
+      traefik.port: 9093
+      traefik.frontend.auth.basic.users: ${TRAEFIK_AUTH}
 
   nodeexporter:
     image: prom/node-exporter:v0.16.0
@@ -105,6 +111,8 @@ services:
       - monitor-net
     labels:
       org.label-schema.group: "monitoring"
+      traefik.enable: "true"
+      traefik.port: 3000
 
   pushgateway:
     image: prom/pushgateway
@@ -116,22 +124,6 @@ services:
       - monitor-net
     labels:
       org.label-schema.group: "monitoring"
-
-  caddy:
-    image: stefanprodan/caddy
-    container_name: caddy
-    ports:
-      - "3000:3000"
-      - "9090:9090"
-      - "9093:9093"
-      - "9091:9091"
-    volumes:
-      - ./caddy/:/etc/caddy/
-    environment:
-      - ADMIN_USER=${ADMIN_USER:-admin}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
-    restart: unless-stopped
-    networks:
-      - monitor-net
-    labels:
-      org.label-schema.group: "monitoring"
+      traefik.enable: "true"
+      traefik.port: 9091
+      traefik.frontend.auth.basic.users: ${TRAEFIK_AUTH}
