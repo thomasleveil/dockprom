@@ -1,0 +1,26 @@
+version: "2.1"
+services:
+
+  prometheus:
+    healthcheck:
+      test: ["CMD", "nc", "-zv", "localhost", "9090"]
+  
+  alertmanager:
+    healthcheck:
+      test: ["CMD", "nc", "-zv", "localhost", "9093"]
+
+  nodeexporter:
+    healthcheck:
+      test: ["CMD", "nc", "-zv", "localhost", "9100"]
+
+  cadvisor:
+    healthcheck:
+      test: ["CMD", "wget", "--retry-connrefused", "--tries=10", "--spider", "--server-response", "http://localhost:8080/containers/"]
+  
+  grafana:
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--show-error", "--fail", "--retry", "10", "--retry-connrefused", "--retry-delay", "5", "--retry-max-time", "30", "--head", "http://localhost:3000/login"]
+  
+  pushgateway:
+    healthcheck:
+      test: ["CMD", "nc", "-zv", "localhost", "9091"]
