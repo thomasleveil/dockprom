@@ -34,6 +34,12 @@ scrape_configs:
     static_configs:
       - targets: ['pushgateway:9091']
 
+  - job_name: 'hueexporter'
+    scrape_interval: 30s
+    honor_labels: true
+    static_configs:
+      - targets: ['hueexporter:9366']
+
 
 alerting:
   alertmanagers:

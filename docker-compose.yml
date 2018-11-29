@@ -127,3 +127,15 @@ services:
       traefik.enable: "true"
       traefik.port: 9091
       traefik.frontend.auth.basic.users: ${TRAEFIK_AUTH}
+
+  hueexporter:
+    image: mitchellrj/hue_exporter:latest
+    volumes:
+      - ./hue.yml:/etc/hue_exporter/config.yml:ro
+    restart: unless-stopped
+    expose:
+      - 9366
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
